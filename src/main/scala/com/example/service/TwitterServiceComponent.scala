@@ -119,7 +119,7 @@ trait TwitterServiceComponent {
           logger.info(s"RateLimit = ${rateLimitStatus.getLimit}, Remaining = ${rateLimitStatus.getRemaining}, SecondsUntilReset = ${rateLimitStatus.getSecondsUntilReset}")
           if (rateLimitStatus.getRemaining == 0) {
             logger.info(s"Sleeping... ${rateLimitStatus.getSecondsUntilReset} seconds.")
-            Thread.sleep(rateLimitStatus.getSecondsUntilReset * 1000)
+            Thread.sleep((rateLimitStatus.getSecondsUntilReset + 5) * 1000)
           }
           val minId = responseList.asScala.map(s => s.getId).min
           $$(Some(minId))
