@@ -41,7 +41,7 @@ trait HttpServiceComponent {
             channel.close()
           }
         case _ => // error 無視
-          logger.warn(s"ダウンロードに失敗しちゃったの: ${response.status}")
+          logger.warn(s"ダウンロードに失敗しちゃったの: ${response.status} ($url)")
       }
     }
 

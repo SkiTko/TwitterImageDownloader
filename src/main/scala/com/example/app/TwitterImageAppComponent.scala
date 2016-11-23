@@ -59,15 +59,20 @@ trait TwitterImageAppComponent {
         streamQueue.offer(status)
       }
 
-      if (config.hashTag.isDefined && config.hashTag.get.nonEmpty) {
-        twitterService.streamByTrack(config.hashTag.get, new DefaultStatusListenerImpl(Some(onStatus)))
-      }
-      else if (config.listOwner.isDefined && config.listName.isDefined) {
-        twitterService.streamByList(config.listOwner.get, config.listName.get, new DefaultStatusListenerImpl(Some(onStatus)))
-      }
-      else {
-        logger.error("設定が無いのです…")
-        actorSystem.terminate()
+      config.mode match {
+        case "hashtag" =>
+          twitterService.streamByTrack(config.hashTag.get, new DefaultStatusListenerImpl(Some(onStatus)))
+
+        case "list" =>
+          twitterService.streamByList(config.listOwner.get, config.listName.get, new DefaultStatusListenerImpl(Some(onStatus)))
+
+        case "favorites" =>
+          twitterService.getFavorites(None, onStatus)
+          actorSystem.terminate()
+
+        case _ =>
+          logger.error("設定が無いのです…")
+          actorSystem.terminate()
       }
       Await.result(actorSystem.whenTerminated, Duration.Inf)
     }

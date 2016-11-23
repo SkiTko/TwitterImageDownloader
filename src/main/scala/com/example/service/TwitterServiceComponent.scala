@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.Logger
 import twitter4j._
 
 import scala.annotation.tailrec
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 
 /**
@@ -42,7 +42,7 @@ trait TwitterServiceComponent {
       * @param ownerScreenName
       * @param listName
       */
-    def streamByList(ownerScreenName: String, listName: String, listener: StatusListener) = {
+    def streamByList(ownerScreenName: String, listName: String, listener: StatusListener): Unit = {
 
       // list のメンバーを取得
       val userListMembers = getUserListMembers(ownerScreenName, listName)
@@ -74,7 +74,7 @@ trait TwitterServiceComponent {
       def $$(cursor: Long, listMembers: List[User]): List[User] = {
 
         val result = twitter.list().getUserListMembers(ownerScreenName, listName, 5000, cursor)
-        val newList = listMembers ++ result
+        val newList = listMembers ++ result.asScala
         if (result.hasNext) {
           $$(result.getNextCursor, newList)
         }
@@ -90,6 +90,44 @@ trait TwitterServiceComponent {
     def getStatus(id: Long): Status = {
       val twitter = TwitterFactory.getSingleton
       twitter.showStatus(id)
+    }
+
+
+    def getFavorites[U](screenName: Option[String], callback: (Status => U)): Unit = {
+
+      val twitter = TwitterFactory.getSingleton
+
+      def getFavoritesPaging(paging: Paging) = screenName match {
+        case None => twitter.favorites().getFavorites(paging)
+        case Some(scrnName) => twitter.favorites().getFavorites(scrnName, paging)
+      }
+
+      @tailrec def $$(maxId: Option[Long]): Unit = {
+        val paging = new Paging(1, 200)
+        val responseList = maxId match {
+          case None =>
+            getFavoritesPaging(paging)
+          case Some(_maxId) =>
+            paging.setMaxId(_maxId)
+            getFavoritesPaging(paging)
+        }
+        if (responseList.size() > 0) {
+          responseList.asScala.foreach { status =>
+            callback(status)
+          }
+          val rateLimitStatus = responseList.getRateLimitStatus
+          logger.info(s"RateLimit = ${rateLimitStatus.getLimit}, Remaining = ${rateLimitStatus.getRemaining}, SecondsUntilReset = ${rateLimitStatus.getSecondsUntilReset}")
+          if (rateLimitStatus.getRemaining == 0) {
+            logger.info(s"Sleeping... ${rateLimitStatus.getSecondsUntilReset} seconds.")
+            Thread.sleep(rateLimitStatus.getSecondsUntilReset * 1000)
+          }
+          val minId = responseList.asScala.map(s => s.getId).min
+          $$(Some(minId))
+        }
+      }
+
+      $$(None)
+
     }
 
   }

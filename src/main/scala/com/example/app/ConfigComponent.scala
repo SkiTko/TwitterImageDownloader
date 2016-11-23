@@ -14,6 +14,7 @@ trait ConfigComponent {
 
   class Config(underlying: com.typesafe.config.Config = ConfigFactory.load()) {
 
+    val mode = underlying.as[String]("app.twitter.stream.mode")
     val hashTag = underlying.getAs[List[String]]("app.twitter.stream.hashtags")
     val listOwner = underlying.getAs[String]("app.twitter.stream.list.owner")
     val listName = underlying.getAs[String]("app.twitter.stream.list.name")
