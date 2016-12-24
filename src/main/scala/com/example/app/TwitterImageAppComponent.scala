@@ -68,7 +68,6 @@ trait TwitterImageAppComponent {
 
         case "favorites" =>
           twitterService.getFavorites(None, onStatus)
-          actorSystem.terminate()
 
         case _ =>
           logger.error("設定が無いのです…")

@@ -98,8 +98,8 @@ trait TwitterServiceComponent {
       val twitter = TwitterFactory.getSingleton
 
       def getFavoritesPaging(paging: Paging) = screenName match {
-        case None => twitter.favorites().getFavorites(paging)
-        case Some(scrnName) => twitter.favorites().getFavorites(scrnName, paging)
+        case None => twitter.getFavorites(paging)
+        case Some(scrnName) => twitter.getFavorites(scrnName, paging)
       }
 
       @tailrec def $$(maxId: Option[Long]): Unit = {
@@ -107,12 +107,18 @@ trait TwitterServiceComponent {
         val responseList = maxId match {
           case None =>
             getFavoritesPaging(paging)
+
           case Some(_maxId) =>
+            logger.info(s"maxId = ${_maxId}.")
+            paging.setSinceId(1L)
             paging.setMaxId(_maxId)
             getFavoritesPaging(paging)
         }
+
         if (responseList.size() > 0) {
+          logger.info(s"Got: ${responseList.size()}")
           responseList.asScala.foreach { status =>
+            logger.info(s"Status Id = ${status.getId}")
             callback(status)
           }
           val rateLimitStatus = responseList.getRateLimitStatus
@@ -122,7 +128,10 @@ trait TwitterServiceComponent {
             Thread.sleep((rateLimitStatus.getSecondsUntilReset + 5) * 1000)
           }
           val minId = responseList.asScala.map(s => s.getId).min
-          $$(Some(minId))
+          $$(Some(minId - 1))
+        }
+        else {
+          logger.info(s"Finished.")
         }
       }
 
