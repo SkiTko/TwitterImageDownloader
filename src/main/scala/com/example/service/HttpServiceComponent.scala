@@ -1,6 +1,6 @@
 package com.example.service
 
-import java.io.FileOutputStream
+import java.io.{File, FileOutputStream}
 import java.net.URI
 
 import akka.actor.ActorSystem
@@ -12,7 +12,6 @@ import com.typesafe.scalalogging.Logger
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
-
 import scala.concurrent.ExecutionContext.Implicits.global
 
 
@@ -31,20 +30,21 @@ trait HttpServiceComponent {
 
     def download(url: String, path: String)(implicit actorSystem: ActorSystem, materializer: Materializer) = {
 
-      val downloadTask = Http().singleRequest(HttpRequest(uri = url))
-      val response = Await.result(downloadTask, 5.minutes)
-      response.status match {
-        case StatusCodes.OK =>
-          val channel = new FileOutputStream(path).getChannel
-          val task = response.entity.getDataBytes().runWith(Sink.foreach(b => channel.write(b.asByteBuffer)), materializer)
-          task.andThen { case _ =>
-            channel.close()
-          }
-        case _ => // error 無視
-          logger.warn(s"ダウンロードに失敗しちゃったの: ${response.status} ($url)")
+      if (!new File(path).exists()) {
+        val downloadTask = Http().singleRequest(HttpRequest(uri = url))
+        val response = Await.result(downloadTask, 5.minutes)
+        response.status match {
+          case StatusCodes.OK =>
+            val channel = new FileOutputStream(path).getChannel
+            val task = response.entity.getDataBytes().runWith(Sink.foreach(b => channel.write(b.asByteBuffer)), materializer)
+            task.andThen { case _ =>
+              channel.close()
+            }
+          case _ => // error 無視
+            logger.warn(s"ダウンロードに失敗しちゃったの: ${response.status} ($url)")
+        }
       }
     }
-
   }
 
 }
