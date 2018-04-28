@@ -58,7 +58,7 @@ trait FlowsComponent {
       Flow.fromFunction((mt: MediaTweet) => {
         mt.uris.foreach { uri =>
 
-          val pathName = s"$directory/${extractFileName(uri)}"
+          val pathName = s"$directory/${mt.user.getScreenName()}/${extractFileName(uri)}"
           val url = s"$uri:orig"
           httpService.download(url, pathName)
         }

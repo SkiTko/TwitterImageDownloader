@@ -29,8 +29,13 @@ trait HttpServiceComponent {
 
 
     def download(url: String, path: String)(implicit actorSystem: ActorSystem, materializer: Materializer) = {
+      val outFile = new File(path)
 
-      if (!new File(path).exists()) {
+      if (!outFile.exists()) {
+        val parent = outFile.getParentFile()
+        if(!parent.exists()) {
+          parent.mkdirs()
+        }
         val downloadTask = Http().singleRequest(HttpRequest(uri = url))
         val response = Await.result(downloadTask, 5.minutes)
         response.status match {
