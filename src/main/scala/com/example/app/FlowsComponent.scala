@@ -47,7 +47,7 @@ trait FlowsComponent {
 
 
     val extractMedia = Flow.fromFunction((s: Status) => {
-      val uris = s.getExtendedMediaEntities.map { me => me.getMediaURLHttps }.toSeq
+      val uris = s.getMediaEntities.map { me => me.getMediaURLHttps }.toSeq
       MediaTweet(s.getId, s.getUser, uris)
     })
 

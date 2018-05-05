@@ -50,18 +50,26 @@ class FlowsSpec extends
         override def isRetweet: Boolean = false
 
         override def getText: String = "はわわ～"
+        override def getDisplayTextRangeStart: Int = 0
+        override def getDisplayTextRangeEnd: Int = 0
 
         override def getRetweetedStatus: twitter4j.Status = new TwitterStatusImpl {
           override def getText: String = "にゃしぃ"
+          override def getDisplayTextRangeStart: Int = 0
+          override def getDisplayTextRangeEnd: Int = 0
         }
       }
       val rtStatus = new TwitterStatusImpl {
         override def isRetweet: Boolean = true
 
         override def getText: String = "はわわ～"
+        override def getDisplayTextRangeStart: Int = 0
+        override def getDisplayTextRangeEnd: Int = 0
 
         override def getRetweetedStatus: twitter4j.Status = new TwitterStatusImpl {
           override def getText: String = "にゃしぃ"
+          override def getDisplayTextRangeStart: Int = 0
+          override def getDisplayTextRangeEnd: Int = 0
         }
       }
 
@@ -157,11 +165,13 @@ object FlowsSpec {
 
     override def getUserMentionEntities: Array[UserMentionEntity] = ???
 
-    override def getExtendedMediaEntities: Array[ExtendedMediaEntity] = ???
-
     override def getAccessLevel: Int = ???
 
     override def getRateLimitStatus: RateLimitStatus = ???
+
+    override def getDisplayTextRangeStart: Int = ???
+
+    override def getDisplayTextRangeEnd: Int = ???
 
     override def compareTo(o: twitter4j.Status): Int = ???
   }
