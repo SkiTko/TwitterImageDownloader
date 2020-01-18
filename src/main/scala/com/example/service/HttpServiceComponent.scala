@@ -13,6 +13,7 @@ import com.typesafe.scalalogging.Logger
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
+import akka.util.ByteString;
 
 
 /**
@@ -41,7 +42,7 @@ trait HttpServiceComponent {
         response.status match {
           case StatusCodes.OK =>
             val channel = new FileOutputStream(path).getChannel
-            val task = response.entity.getDataBytes().runWith(Sink.foreach(b => channel.write(b.asByteBuffer)), materializer)
+            val task = response.entity.getDataBytes().runWith(Sink.foreach((b: ByteString) => channel.write(b.asByteBuffer)), materializer)
             task.andThen { case _ =>
               channel.close()
             }

@@ -9,7 +9,6 @@ import akka.testkit.{ImplicitSender, TestKit}
 import com.example.app.FlowsSpec.TwitterStatusImpl
 import com.example.service.HttpServiceComponent
 import org.scalatest._
-import org.scalatest.mock.MockitoSugar
 import twitter4j._
 import twitter4j.{Status => TwitterStatus}
 
@@ -97,8 +96,7 @@ object FlowsSpec {
 
   trait TestComponentRegistry extends
     FlowsComponent with
-    HttpServiceComponent with
-    MockitoSugar
+    HttpServiceComponent
 
 
   class TwitterStatusImpl extends twitter4j.Status {
@@ -172,6 +170,8 @@ object FlowsSpec {
     override def getDisplayTextRangeStart: Int = ???
 
     override def getDisplayTextRangeEnd: Int = ???
+
+    override def getQuotedStatusPermalink: URLEntity = ???
 
     override def compareTo(o: twitter4j.Status): Int = ???
   }
